@@ -59,9 +59,12 @@ We still call Google for fresh data — but we protect you from failures:
 ## 🌍 Regional Deployment & Compliance
 We support deployments in:
 
-🇨🇦 Canada (ca-central-1) — aligned with PIPEDA and provincial privacy rule
-🇺🇸 US regions — HIPAA-ready architecture
-🇪🇺 EU regions — GDPR-aligned data handling
+* 🇨🇦 Canada (ca-central-1) — aligned with PIPEDA and provincial privacy rule
+* 🇺🇸 US regions — HIPAA-ready architecture
+* 🇪🇺 EU regions — GDPR-aligned data handling
+* 🇧🇷 Latin America – Brazil (sa-east-1) — compliant with LGPD (Lei Geral de Proteção de Dados)
+
+Additional regions available on request.
 
 Key points:
 - Data stays in your chosen AWS region
