@@ -45,8 +45,8 @@ Benefits:
 - No servers to manage
 - Built on trusted, globally adopted cloud services
 - Easy to audit and integrate into existing AWS governance
-
 ---
+
 ## ⚠️Reliability & Fallback
 
 We still call Google for fresh data — but we protect you from failures:
@@ -54,7 +54,7 @@ We still call Google for fresh data — but we protect you from failures:
 - If Google times out or returns 5xx, we can return the **last known good ETA**
 - If Google recovers, we refresh in the background
 - Your application avoids freezes or blank screens during incidents and spikes
-
+---
 
 ## 🌍 Regional Deployment & Compliance
 We support deployments in:
@@ -71,6 +71,7 @@ Key points:
 - Cache is short-lived and used only for optimization
 - We process minimal routing input (lat/lng); no PII or PHI is required
 - No cross-region replication unless explicitly agreed
+---
 
 ## 👥Who This Is For
 
@@ -83,6 +84,7 @@ Key points:
 - SaaS products embedding routing or ETA logic
 
 If Google Maps is a visible line on your bill, this proxy is likely relevant.
+---
 
 ## 🔑 Per-Client API Keys & Metrics
 
@@ -95,8 +97,8 @@ Each customer gets its own API key (e.g. CLIENT-STG-123):
 * cache_hits / cache_misses
 * google_calls
 * fallback_uses
-
 This makes it easy to see exactly how much traffic and savings the proxy delivers.
+---
 
 ## ⚙️ API Endpoints Integration
 
@@ -174,19 +176,21 @@ Pseudocode:
 }
 ```
 Zero operational risk.
+---
 
 ### 🧩Architecture (High Level)
 
 Your app → Goseanto Maps Proxy → Google Maps
 
 Roughly:
-
 - Your App (SaaS / dispatch / mobility)
 - HTTPS → API Gateway
 - Lambda (Go) with caching + burst control
 - DynamoDB for cache + metrics
 - Outbound call to Google Distance Matrix / Directions
 - Response relayed back in Google-compatible format
+
+---
 
 ## 📩Access
 
