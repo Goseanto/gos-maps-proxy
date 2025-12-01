@@ -189,23 +189,28 @@ try {
 ---
 
 ### 🧩Architecture (High Level)
+
 Your app → Goseanto Maps Proxy → Google Maps
+
 Roughly:
 
-Your App (SaaS / dispatch / mobility)
-HTTPS → API Gateway
-Lambda (Go) with caching + burst control
-DynamoDB for cache + metrics
-Outbound call to Google Distance Matrix / Directions
-Response relayed back in Google-compatible format
+* Your application sends standard Google-compatible requests
+* Our secure gateway processes them using our proprietary optimization engine
+* Google is called only when necessary
+* Cached responses return in a few milliseconds (faster than calling Google directly)
+* Live Google calls add only a minimal overhead (usually <10–20 ms)
+* Responses are returned in Google-compatible JSON, so no code changes on your side
 
 ---
 
 ## 📩Access
-This documentation is public.
-Production API access requires:
-An issued API key and region selection
-Interested in testing or a sample environment?
-Contact us:
+This documentation is public; API access is not.
+
+Production access requires:
+* A provisioned endpoint in your chosen AWS region
+* A dedicated API key
+* Optional test environment available on request
+
+For onboarding or pilot testing:
 📧 info@goseanto.com
 🌐 https://goseanto.com
