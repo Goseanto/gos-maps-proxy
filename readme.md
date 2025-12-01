@@ -60,12 +60,12 @@ Zero risk. Full resilience.
 
 Deploy in your preferred AWS region — data stays where you need it:
 
-| Region                | Location           | Compliance Support                     |
-|-----------------------|--------------------|----------------------------------------|
-| `ca-central-1`        | Canada             | PIPEDA + provincial privacy laws       |
-| US regions            | United States      | HIPAA-eligible architecture            |
-| EU regions            | European Union     | GDPR-compliant data handling           |
-| `sa-east-1`           | Brazil             | LGPD (Lei Geral de Proteção de Dados)  |
+| Region                | Location            | Compliance Support                     |
+|-----------------------|---------------------|----------------------------------------|
+| `ca-central-1`        | 🇨🇦 Canada            | PIPEDA + provincial privacy laws       |
+| US regions            | 🇺🇸 United States     | HIPAA-eligible architecture            |
+| EU regions            | 🇪🇺 European Union    | GDPR-compliant data handling           |
+| `sa-east-1`           | 🇧🇷 Brazil            | LGPD (Lei Geral de Proteção de Dados)  |
 
 Custom regions available on request  
 No cross-region data replication unless explicitly approved  
@@ -173,11 +173,11 @@ If any error → fallback to Google.
 
 Pseudocode:
 ```javascript
-{ try 
-    { return callGoseanto(); } 
-    catch 
-    { return callGoogle(); } 
-    }
+try {
+  return callGoseanto();
+} catch {
+  return callGoogle();
+}
 ```
 ---
 
