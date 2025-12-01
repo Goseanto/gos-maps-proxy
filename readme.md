@@ -138,19 +138,46 @@ GET https://maps.goseanto.com/directions
 ```
 Response: Unmodified Google Distance Matrix JSON
 
+### 2. Directions API
+✅ Option A — JSON Body (recommended)
+```http
+POST https://maps.goseanto.com/directions?key=<API_KEY>
+Content-Type: application/json
+
+{
+  "origin": "45.5017,-73.5673",
+  "destination": "45.5081,-73.5550",
+  "mode": "driving",
+  "traffic": true,
+  "waypoints": ["45.5050,-73.5600"]
+}
+```
+✅ Option B — Query Parameters (Google-style)
+
+```http
+GET https://maps.<stage>.goseanto.com/directions
+  ?origin=45.5017,-73.5673
+  &destination=45.5081,-73.5550
+  &mode=driving
+  &traffic=true
+  &waypoints=45.5050,-73.5600
+  &key=<API_KEY>
+
+```
+Response: Google Directions JSON, proxied through the gateway.
+
 ---
 ## 🔄 Zero operational risk - Failover Pattern (Recommended)
 Use our proxy as primary.
 If any error → fallback to Google.
+
 Pseudocode:
 ```javascript
-{
-&nbsp;&nbsp;try {
-&nbsp;&nbsp;&nbsp;&nbsp;return callGoseanto();
-} catch {
-&nbsp;&nbsp;&nbsp;&nbsp;return callGoogle();
-}
-}
+{ try 
+    { return callGoseanto(); } 
+    catch 
+    { return callGoogle(); } 
+    }
 ```
 ---
 
