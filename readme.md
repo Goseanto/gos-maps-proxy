@@ -101,13 +101,14 @@ Every customer gets:
 - Fully isolated traffic and rate limits
 - Real-time usage dashboard:
 
-| Metric              | Description                       |
-|---------------------|-----------------------------------|
-| `total_requests`    | All incoming requests             |
-| `cache_hits`        | Served from cache (free)          |
-| `cache_misses`      | Forwarded to Google               |
-| `google_calls`      | Actual billable requests          |
-| `fallback_uses`     | Resilience events triggered       |
+| Metric              | Description                                                                 |
+|---------------------|-----------------------------------------------------------------------------|
+| `total_requests`    | All incoming requests received by the proxy                                 |
+| `cache_hits`        | Requests served directly from cache (no new Google call needed)             |
+| `cache_misses`      | Requests not found in cache (typically lead to a Google call or fallback)   |
+| `google_calls`      | Outgoing requests sent to Google (billable events)                          |
+| `fallback_uses`     | Times fallback logic was triggered (Google error, timeout, or suppression)  |
+| `stale_uses`        | Responses served using stale-but-valid cached data (stale-while-revalidate) |
 
 See your savings in real time.
 
