@@ -12,19 +12,23 @@ A lightweight, AWS-hosted routing layer that sits in front of **Google Maps Dist
 
 ## 💰 How It Saves You Money
 
-**Before (direct calls):**
-- Unit A → Google → $0.005–$0.01 per request  
-- Unit B → Google → $0.005–$0.01 per request  
-- Unit C → Google → $0.005–$0.01 per request  
-→ **Every identical request costs money**
+**Before (direct to Google):**
+Google often charges per element, not per call.
+A single Distance Matrix request can contain 4, 16, 100+ elements — and each element is billable.
+- Unit A → 20 elements → $0.10–$0.20  
+- Unit B → 20 elements → $0.10–$0.20  
+- Unit C → 20 elements → $0.10–$0.20  
+→ **Identical calls multiply your cost**
 
 **After (with Goseanto Proxy):**
-- First request → forwarded to Google  
+- First unique request → sent to Google
 - Next identical requests (within 10–20 seconds) → served instantly from **AWS cache**  
-- Cache duration shorter than Google’s traffic data refresh cycle
+- Cache window is shorter than Google’s traffic refresh cycle
+- **We stay inside Google’s own traffic refresh cycle (2–7 minutes)**
+    → meaning cached responses are still 100% accurate
 
 **Result:**
-- Identical real-time data from Google
+- Same real-time Google data
 - **Dramatically fewer billable API calls**
 - **Typical savings: 30–60%** (often higher during peak traffic)
 
@@ -46,13 +50,14 @@ Fully hosted on **Amazon Web Services** — no servers to manage:
 
 ## ⚠️ Built-in Reliability & Smart Fallback
 
-We never compromise accuracy — but we protect your app:
+We never compromise accuracy — but we protect your app from failures and overloads::
 
 - If Google returns 5xx or times out → serve **last known good result**
 - Background refresh when Google recovers
-- Your users never see blank screens or delays during incidents
+- Burst protection: identical flood requests from CAD units are automatically deduplicated
+- Zero delays, zero dropped responses
 
-Zero risk. Full resilience.
+Your users never see blank screens — even during peak load or external outages.
 
 ---
 
@@ -67,9 +72,10 @@ Deploy in your preferred AWS region — data stays where you need it:
 | EU regions            | 🇪🇺 European Union    | GDPR-compliant data handling           |
 | `sa-east-1`           | 🇧🇷 Brazil            | LGPD (Lei Geral de Proteção de Dados)  |
 
-Custom regions available on request  
-No cross-region data replication unless explicitly approved  
-Minimal data processed: only coordinates (no PII/PHI required)
+- Deployment time: typically under 1 hour (fully automated infrastructure)
+- Custom regions available on request  
+- No cross-region data replication unless explicitly approved  
+- Minimal data processed: only coordinates (no PII/PHI required)
 
 ---
 
@@ -136,9 +142,10 @@ GET https://maps.goseanto.com/directions
       &waypoints=45.5050,-73.5600
       &key=<API_KEY>
 ```
-Response: Unmodified Google Distance Matrix JSON
+Response: Unmodified Google Distance Matrix JSON.
 
 ### 2. Directions API
+
 ✅ Option A — JSON Body (recommended)
 ```http
 POST https://maps.goseanto.com/directions?key=<API_KEY>
@@ -164,7 +171,7 @@ GET https://maps.<stage>.goseanto.com/directions
   &key=<API_KEY>
 
 ```
-Response: Google Directions JSON, proxied through the gateway.
+Response: Unmodified Google Directions JSON.
 
 ---
 ## 🔄 Zero operational risk - Failover Pattern (Recommended)
