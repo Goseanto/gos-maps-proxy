@@ -114,6 +114,7 @@ Supports **both JSON and query parameter** styles — works with existing code.
 ### 1. Distance Matrix API
 
 **Recommended: POST + JSON body**
+ ✅ Option A — JSON Body (recommended)
 ```http
 POST https://maps.goseanto.com/eta?key=YOUR_API_KEY
 Content-Type: application/json
@@ -124,13 +125,16 @@ Content-Type: application/json
   "traffic": true
 }
 ```
-Legacy compatible: GET + query params
+✅ Option B — Query Parameters (Google-compatible)
+
 ```http
-GET https://maps.goseanto.com/eta
-  ?origins=45.5017,-73.5673
-  &destinations=45.5081,-73.5550
-  &traffic=true
-  &key=YOUR_API_KEY
+GET https://maps.goseanto.com/directions
+      ?origin=45.5017,-73.5673
+      &destination=45.5081,-73.5550
+      &mode=driving
+      &traffic=true
+      &waypoints=45.5050,-73.5600
+      &key=<API_KEY>
 ```
 Response: Unmodified Google Distance Matrix JSON
 
