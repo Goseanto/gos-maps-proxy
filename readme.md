@@ -204,31 +204,36 @@ Roughly:
 
 ---
 ### 🧠 Summary of Our Caching & Freshness Behavior
-| Scenario                                     | What the App Sends               | Key Changes? | Google Call?                | Freshness           | Why It’s Fresh                                                                                                      |
-| -------------------------------------------- | -------------------------------- | ------------ | --------------------------- | ------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| **Identical request repeated (TTL = 1–20s)** | `origin=A, dest=B, traffic=true` | ❌            | ❌ (cache or burst collapse) | **Fresh**           | TTL (1–20s) is far below Google’s 2–7 min traffic refresh → identical request = identical result                    |
-| **Identical request repeated (TTL = 0)**     | `origin=A, dest=B, traffic=true` | ❌            | ❌ (burst collapse only)     | **Fresh**           | Even with TTL=0, concurrent identical calls collapse to **one Google call**; traffic changes only every few minutes |
-| **Origin changes**                           | `origin=A' , dest=B`             | ✅            | ✅                           | **100% fresh**      | New origin → new geometry → requires fresh computation                                                              |
-| **Destination changes**                      | `origin=A, dest=B'`              | ✅            | ✅                           | **100% fresh**      | Destination moved → new route → requires new Google call                                                            |
-| **Traffic mode changes**                     | `traffic=true/false`             | ✅            | ✅                           | **100% fresh**      | Traffic models differ → cannot reuse cached or collapsed result                                                     |
-| **Waypoints change**                         | New intermediate points          | ✅            | ✅                           | **100% fresh**      | Route topology changed → recomputation needed                                                                       |
-| **Departure time changes**                   | `now` vs `now + X`               | Usually      | Usually                     | **100% fresh**      | Time-dependent routing → requires recalculation                                                                     |
-| **Google outage**                            | Any input                        | N/A          | ❌                           | **Last known good** | Proxy serves LKG; background refresh happens when Google returns                                                    |
 
-* TTL (Time-To-Live)      -  A very short reuse window (0–20 seconds). If two identical requests arrive close together, we reuse the first result. This does not affect accuracy — Google updates traffic only every 2–7 minutes.
-* Key Changes           -  Anything that changes the route, such as: different origin or destination, different waypoints, traffic flag changes, different departure time. 
-* Last Known Good (LKG)-  If Google is down or slow, we return the most recent valid result so your app never breaks.
+| Scenario                                     | What the App Sends               | Key Changes? | Google Call?                      | Freshness          | Why It’s Fresh                                                                                                      |
+| -------------------------------------------- | -------------------------------- | ------------ | ---------------------------------- | ------------------ | ------------------------------------------------------------------------------------------------------------------- |
+| **Identical request repeated (TTL = 1–20s)** | `origin=A, dest=B, traffic=true` | ❌            | ❌ (cache or burst collapse)       | **Fresh**          | TTL is far below Google’s 2–7 min traffic refresh → identical request = identical result                            |
+| **Identical request repeated (TTL = 0)**     | `origin=A, dest=B, traffic=true` | ❌            | ✅ (1 Google call per burst group) | **100% fresh**     | TTL=0 means every request (or burst group) hits Google; burst collapse reduces duplicate calls, not freshness       |
+| **Origin changes**                           | `origin=A', dest=B`              | ✅            | ✅                                 | **100% fresh**     | New origin → new geometry → fresh computation required                                                              |
+| **Destination changes**                      | `origin=A, dest=B'`              | ✅            | ✅                                 | **100% fresh**     | New destination → new route → requires new Google call                                                              |
+| **Traffic mode changes**                     | `traffic=true/false`             | ✅            | ✅                                 | **100% fresh**     | Traffic model affects ETA → cannot reuse cached or collapsed result                                                 |
+| **Waypoints change**                         | New intermediate points          | ✅            | ✅                                 | **100% fresh**     | Route topology changed → recomputation required                                                                     |
+| **Departure time changes**                   | `now` vs `now + X`               | Usually      | Usually                            | **100% fresh**     | Time-dependent routing → requires recalculation                                                                     |
+| **Google outage**                            | Any input                        | N/A          | ❌                                 | **Last known good**| Proxy serves LKG; background refresh happens when Google returns                                                    |
+
+### 📝 Plain-Language Notes
+
+- **TTL (Time-To-Live):** Short reuse window (0–20s). If the same request comes in again during this window, we can reuse the previous result instead of calling Google again.
+- **Burst Collapse**: When many identical requests arrive at the same moment, we combine them into one Google call and share the result with everyone — reducing cost without affecting accuracy.  
+- **Key Changes:** Route changed (origin/destination/waypoints/traffic/time) → new Google call.  
+- **LKG:** If Google fails, we return the last good result so your app keeps working.
+
 ---
 
-## 📩Access
+## 📩 Access
 This documentation is public; API access is not.
 
 Production access requires:
 * A provisioned endpoint in your chosen AWS region
 * A dedicated API key
 
- Optional test environment available on request
+Optional test environment available on request
 
 For onboarding or pilot testing:
-📧 info@goseanto.com
+📧 info@goseanto.com  
 🌐 https://goseanto.com
