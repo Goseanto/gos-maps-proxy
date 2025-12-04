@@ -214,8 +214,11 @@ Roughly:
 | **Waypoints change**                         | New intermediate points          | ✅            | ✅                           | **100% fresh**      | Route topology changed → recomputation needed                                                                       |
 | **Departure time changes**                   | `now` vs `now + X`               | Usually      | Usually                     | **100% fresh**      | Time-dependent routing → requires recalculation                                                                     |
 | **Google outage**                            | Any input                        | N/A          | ❌                           | **Last known good** | Proxy serves LKG; background refresh happens when Google returns                                                    |
-   
 
+* TTL (Time-To-Live)      -  A very short reuse window (0–20 seconds). If two identical requests arrive close together, we reuse the first result. This does not affect accuracy — Google updates traffic only every 2–7 minutes.
+*** Key Changes           -  Anything that changes the route, such as: different origin or destination, different waypoints, traffic flag changes, different departure time. 
+**** Last Known Good (LKG)-  If Google is down or slow, we return the most recent valid result so your app never breaks.
+---
 
 ## 📩Access
 This documentation is public; API access is not.
@@ -223,7 +226,8 @@ This documentation is public; API access is not.
 Production access requires:
 * A provisioned endpoint in your chosen AWS region
 * A dedicated API key
-* Optional test environment available on request
+
+ Optional test environment available on request
 
 For onboarding or pilot testing:
 📧 info@goseanto.com
