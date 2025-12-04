@@ -203,6 +203,19 @@ Roughly:
 * Responses are returned in Google-compatible JSON, so no code changes on your side
 
 ---
+### 🧠 Summary of Our Caching & Freshness Behavior
+| Scenario                                     | What the App Sends               | Key Changes? | Google Call?                | Freshness           | Why It’s Fresh                                                                                                      |
+| -------------------------------------------- | -------------------------------- | ------------ | --------------------------- | ------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| **Identical request repeated (TTL = 1–20s)** | `origin=A, dest=B, traffic=true` | ❌            | ❌ (cache or burst collapse) | **Fresh**           | TTL (1–20s) is far below Google’s 2–7 min traffic refresh → identical request = identical result                    |
+| **Identical request repeated (TTL = 0)**     | `origin=A, dest=B, traffic=true` | ❌            | ❌ (burst collapse only)     | **Fresh**           | Even with TTL=0, concurrent identical calls collapse to **one Google call**; traffic changes only every few minutes |
+| **Origin changes**                           | `origin=A' , dest=B`             | ✅            | ✅                           | **100% fresh**      | New origin → new geometry → requires fresh computation                                                              |
+| **Destination changes**                      | `origin=A, dest=B'`              | ✅            | ✅                           | **100% fresh**      | Destination moved → new route → requires new Google call                                                            |
+| **Traffic mode changes**                     | `traffic=true/false`             | ✅            | ✅                           | **100% fresh**      | Traffic models differ → cannot reuse cached or collapsed result                                                     |
+| **Waypoints change**                         | New intermediate points          | ✅            | ✅                           | **100% fresh**      | Route topology changed → recomputation needed                                                                       |
+| **Departure time changes**                   | `now` vs `now + X`               | Usually      | Usually                     | **100% fresh**      | Time-dependent routing → requires recalculation                                                                     |
+| **Google outage**                            | Any input                        | N/A          | ❌                           | **Last known good** | Proxy serves LKG; background refresh happens when Google returns                                                    |
+   
+
 
 ## 📩Access
 This documentation is public; API access is not.
