@@ -24,8 +24,6 @@ A single Distance Matrix request can contain 4, 16, 100+ elements — and each e
 - First unique request → sent to Google
 - Next identical requests (within 10–20 seconds) → served instantly from **AWS cache**  
 - Cache window is shorter than Google’s traffic refresh cycle
-- **We stay inside Google’s own traffic refresh cycle (2–7 minutes)**
-    → meaning cached responses are still 100% accurate
 
 **Result:**
 - Same real-time Google data
@@ -163,7 +161,7 @@ Content-Type: application/json
 ✅ Option B — Query Parameters (Google-style)
 
 ```http
-GET https://maps.<stage>.goseanto.com/directions
+GET https://maps.goseanto.com/directions
   ?origin=45.5017,-73.5673
   &destination=45.5081,-73.5550
   &mode=driving
@@ -205,16 +203,36 @@ Roughly:
 ---
 ### 🧠 Summary of Our Caching & Freshness Behavior
 
-| Scenario                                     | What the App Sends               | Key Changes? | Google Call?                      | Freshness          | Why It’s Fresh                                                                                                      |
-| -------------------------------------------- | -------------------------------- | ------------ | ---------------------------------- | ------------------ | ------------------------------------------------------------------------------------------------------------------- |
-| **Identical request repeated (TTL = 1–20s)** | `origin=A, dest=B, traffic=true` | ❌            | ❌ (cache or burst collapse)       | **Fresh**          | TTL is far below Google’s 2–7 min traffic refresh → identical request = identical result                            |
-| **Identical request repeated (TTL = 0)**     | `origin=A, dest=B, traffic=true` | ❌            | ✅ (1 Google call per burst group) | **100% fresh**     | TTL=0 means every request (or burst group) hits Google; burst collapse reduces duplicate calls, not freshness       |
-| **Origin changes**                           | `origin=A', dest=B`              | ✅            | ✅                                 | **100% fresh**     | New origin → new geometry → fresh computation required                                                              |
-| **Destination changes**                      | `origin=A, dest=B'`              | ✅            | ✅                                 | **100% fresh**     | New destination → new route → requires new Google call                                                              |
-| **Traffic mode changes**                     | `traffic=true/false`             | ✅            | ✅                                 | **100% fresh**     | Traffic model affects ETA → cannot reuse cached or collapsed result                                                 |
-| **Waypoints change**                         | New intermediate points          | ✅            | ✅                                 | **100% fresh**     | Route topology changed → recomputation required                                                                     |
-| **Departure time changes**                   | `now` vs `now + X`               | Usually      | Usually                            | **100% fresh**     | Time-dependent routing → requires recalculation                                                                     |
-| **Google outage**                            | Any input                        | N/A          | ❌                                 | **Last known good**| Proxy serves LKG; background refresh happens when Google returns                                                    |
+### Accurate, Real-Time Results — With Smart Cost Reduction
+
+We use a **two-layer caching strategy** specifically tuned for Google’s live-traffic behavior:
+
+| Layer                  | Duration          | Purpose                                                                 | Effect on Freshness                              |
+|------------------------|-------------------|--------------------------------------------------------------------------|--------------------------------------------------|
+| **Burst deduplication**| ~400 ms (fixed)   | Collapses 100 identical concurrent requests into 1 Google call           | Zero added latency, 100% fresh                    |
+| **Main cache**         | 5–20 seconds (configurable per customer, capped at ≤20s when traffic=true) | Eliminates repeat calls during short-term spikes                        | Still effectively real-time                      |
+
+**Why this is safe and accurate:**
+
+- Google’s live traffic data does not change materially in under 20–30 seconds in the real world.
+- We always call Google with `departure_time=now` when `traffic=true`.
+- Our maximum reuse window for traffic-aware responses is ≤20 seconds (often tighter).
+- Result: cached responses are **indistinguishable from a brand-new Google call** from the user’s perspective, while dramatically reducing billable elements.
+
+Non-traffic requests (e.g. static routes, walking, bicycling) can use longer configurable TTLs when appropriate.
+
+### 2. Updated Freshness Behavior Table 
+
+| Scenario                                   | Cache Hit? | Google Call?                     | Freshness Level       | Explanation                                                                 |
+|--------------------------------------------|------------|----------------------------------|-----------------------|-----------------------------------------------------------------------------|
+| Identical request within ~400 ms           | Yes (burst) | Only 1 call (shared)             | 100% fresh            | All concurrent callers get the same live result instantly                  |
+| Identical request within main cache TTL    | Yes        | No                               | Effectively real-time | Max 20 s old when traffic=true → traffic hasn’t meaningfully changed       |
+| Different origins / destinations           | No         | Yes                              | 100% fresh            | New geometry → must recompute                                               |
+| Traffic flag flips (true ↔ false)          | No         | Yes                              | 100% fresh            | Different routing model                                                     |
+| Waypoints added / removed / reordered      | No         | Yes                              | 100% fresh            | Route topology changed                                                     |
+| Google returns 5xx, rate limit, or timeout| Yes (stale)| No                               | Last known good       | Your app stays up; we serve most recent valid response                     |
+
+                                        |
 
 ### 📝 Plain-Language Notes
 
