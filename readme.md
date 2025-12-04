@@ -216,8 +216,8 @@ Roughly:
 | **Google outage**                            | Any input                        | N/A          | ❌                           | **Last known good** | Proxy serves LKG; background refresh happens when Google returns                                                    |
 
 * TTL (Time-To-Live)      -  A very short reuse window (0–20 seconds). If two identical requests arrive close together, we reuse the first result. This does not affect accuracy — Google updates traffic only every 2–7 minutes.
-*** Key Changes           -  Anything that changes the route, such as: different origin or destination, different waypoints, traffic flag changes, different departure time. 
-**** Last Known Good (LKG)-  If Google is down or slow, we return the most recent valid result so your app never breaks.
+* Key Changes           -  Anything that changes the route, such as: different origin or destination, different waypoints, traffic flag changes, different departure time. 
+* Last Known Good (LKG)-  If Google is down or slow, we return the most recent valid result so your app never breaks.
 ---
 
 ## 📩Access
