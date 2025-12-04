@@ -22,8 +22,8 @@ A single Distance Matrix request can contain 4, 16, 100+ elements — and each e
 
 **After (with Goseanto Proxy):**
 - First unique request → sent to Google
-- Next identical requests (within 10–20 seconds) → served instantly from **AWS cache**  
-- Cache window is shorter than Google’s traffic refresh cycle
+- Next identical requests (within your configured cache window, typically 1–20 seconds) → served instantly from **AWS cache** 
+- Even with cache disabled (TTL=0), we still collapse micro-bursts so 100 identical in-flight requests become a single Google call
 
 **Result:**
 - Same real-time Google data
@@ -210,8 +210,8 @@ We use a **two-layer caching strategy** specifically tuned for Google’s live-t
 | Layer                  | Duration          | Purpose                                                                 | Effect on Freshness                              |
 |------------------------|-------------------|--------------------------------------------------------------------------|--------------------------------------------------|
 | **Burst deduplication**| ~400 ms (fixed)   | Collapses 100 identical concurrent requests into 1 Google call           | Zero added latency, 100% fresh                    |
-| **Main cache**         | 5–20 seconds (configurable per customer, capped at ≤20s when traffic=true) | Eliminates repeat calls during short-term spikes                        | Still effectively real-time                      |
-
+| **Main cache**         | 1–20 seconds (configurable per customer, capped at ≤20s when traffic=true) | Eliminates repeat calls during short-term spikes                        | Still effectively real-time                      |
+> **Note:** Setting `CACHE_TTL_SECONDS=0` disables the main cache but keeps burst deduplication and last-known-good fallback enabled. This is “burst-only” mode for teams that want maximum freshness with protection against micro-bursts.
 **Why this is safe and accurate:**
 
 - Google’s live traffic data does not change materially in under 20–30 seconds in the real world.
@@ -236,7 +236,7 @@ Non-traffic requests (e.g. static routes, walking, bicycling) can use longer con
 
 ### 📝 Plain-Language Notes
 
-- **TTL (Time-To-Live):** Short reuse window (0–20s). If the same request comes in again during this window, we can reuse the previous result instead of calling Google again.
+- **TTL (Time-To-Live):** Short reuse window (1–20s). If the same request comes in again during this window, we can reuse the previous result instead of calling Google again.
 - **Burst Collapse**: When many identical requests arrive at the same moment, we combine them into one Google call and share the result with everyone — reducing cost without affecting accuracy.  
 - **Key Changes:** Route changed (origin/destination/waypoints/traffic/time) → new Google call.  
 - **LKG:** If Google fails, we return the last good result so your app keeps working.
